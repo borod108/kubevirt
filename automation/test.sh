@@ -32,7 +32,7 @@ export TIMESTAMP=${TIMESTAMP:-1}
 
 export WORKSPACE="${WORKSPACE:-$PWD}"
 readonly ARTIFACTS_PATH="${ARTIFACTS-$WORKSPACE/exported-artifacts}"
-readonly TEMPLATES_SERVER="https://templates.ovirt.org/kubevirt/"
+readonly TEMPLATES_SERVER="/root/templates_server/"      #"https://templates.ovirt.org/kubevirt/"
 readonly BAZEL_CACHE="${BAZEL_CACHE:-http://bazel-cache.kubevirt-prow.svc.cluster.local:8080/kubevirt.io/kubevirt}"
 
 if [ -z $TARGET ]; then
@@ -63,8 +63,8 @@ export KUBEVIRT_MEMORY_SIZE=9216M
 
 export RHEL_NFS_DIR=${RHEL_NFS_DIR:-/var/lib/stdci/shared/kubevirt-images/rhel7}
 export RHEL_LOCK_PATH=${RHEL_LOCK_PATH:-/var/lib/stdci/shared/download_rhel_image.lock}
-export WINDOWS_NFS_DIR=${WINDOWS_NFS_DIR:-/var/lib/stdci/shared/kubevirt-images/windows2016}
-export WINDOWS_LOCK_PATH=${WINDOWS_LOCK_PATH:-/var/lib/stdci/shared/download_windows_image.lock}
+export WINDOWS_NFS_DIR=${WINDOWS_NFS_DIR:-/images}
+export WINDOWS_LOCK_PATH=${WINDOWS_LOCK_PATH:-/root/download_windows_image.lock}
 
 wait_for_download_lock() {
   local max_lock_attempts=60
@@ -112,7 +112,9 @@ safe_download() (
     if [[ "$(cat "$local_sha1_file")" != "$remote_sha1" ]]; then
         echo "${download_to} is not up to date, corrupted or doesn't exist."
         echo "Downloading file from: ${remote_sha1_url}"
-        curl "$download_from" --output "$download_to"
+        # TODO: THIS IS ONLY FOR TESTING ON LOCAL DO NOT MERGE!!!!!!!!!!!! 
+        #curl "$download_from" --output "$download_to"
+        cp "$download_from" --output "$download_to"
         sha1sum "$download_to" | cut -d " " -f1 > "$local_sha1_file"
         [[ "$(cat "$local_sha1_file")" == "$remote_sha1" ]] || {
             echo "${download_to} is corrupted"
@@ -176,9 +178,9 @@ build_images() {
 export NAMESPACE="${NAMESPACE:-kubevirt}"
 
 # Make sure that the VM is properly shut down on exit
-trap '{ make cluster-down; }' EXIT SIGINT SIGTERM SIGSTOP
+#trap '{ make cluster-down; }' EXIT SIGINT SIGTERM SIGSTOP
 
-make cluster-down
+#make cluster-down
 
 # Create .bazelrc to use remote cache
 cat >ci.bazelrc <<EOF
@@ -278,13 +280,13 @@ metadata:
     kubevirt.io/test: "windows"
 spec:
   capacity:
-    storage: 30Gi
+    storage: 54Gi
   accessModes:
     - ReadWriteOnce
   nfs:
     server: "nfs"
     path: /
-  storageClassName: windows
+  storageClassName: local
 EOF
 fi
 
