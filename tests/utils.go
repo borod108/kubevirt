@@ -506,13 +506,13 @@ func SynchronizedAfterTestSuiteCleanup() {
 
 func AfterTestSuitCleanup() {
 
-	cleanupServiceAccounts()
-	cleanNamespaces()
+	// cleanupServiceAccounts()
+	// cleanNamespaces()
 
-	if flags.DeployTestingInfrastructureFlag {
-		WipeTestingInfrastructure()
-	}
-	removeNamespaces()
+	// if flags.DeployTestingInfrastructureFlag {
+	// 	WipeTestingInfrastructure()
+	// }
+	// removeNamespaces()
 }
 
 func BeforeTestCleanup() {
@@ -1678,25 +1678,25 @@ func cleanNamespaces() {
 }
 
 func removeNamespaces() {
-	virtCli, err := kubecli.GetKubevirtClient()
-	PanicOnError(err)
+	// virtCli, err := kubecli.GetKubevirtClient()
+	// PanicOnError(err)
 
-	// First send an initial delete to every namespace
-	for _, namespace := range testNamespaces {
-		err := virtCli.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
-		if !errors.IsNotFound(err) {
-			PanicOnError(err)
-		}
-	}
+	// // First send an initial delete to every namespace
+	// for _, namespace := range testNamespaces {
+	// 	err := virtCli.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
+	// 	if !errors.IsNotFound(err) {
+	// 		PanicOnError(err)
+	// 	}
+	// }
 
-	// Wait until the namespaces are terminated
-	fmt.Println("")
-	for _, namespace := range testNamespaces {
-		fmt.Printf("Waiting for namespace %s to be removed, this can take a while ...\n", namespace)
-		EventuallyWithOffset(1, func() error {
-			return virtCli.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
-		}, 240*time.Second, 1*time.Second).Should(SatisfyAll(HaveOccurred(), WithTransform(errors.IsNotFound, BeTrue())), fmt.Sprintf("should successfully delete namespace '%s'", namespace))
-	}
+	// // Wait until the namespaces are terminated
+	// fmt.Println("")
+	// for _, namespace := range testNamespaces {
+	// 	fmt.Printf("Waiting for namespace %s to be removed, this can take a while ...\n", namespace)
+	// 	EventuallyWithOffset(1, func() error {
+	// 		return virtCli.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
+	// 	}, 240*time.Second, 1*time.Second).Should(SatisfyAll(HaveOccurred(), WithTransform(errors.IsNotFound, BeTrue())), fmt.Sprintf("should successfully delete namespace '%s'", namespace))
+	// }
 }
 
 func detectInstallNamespace() {
